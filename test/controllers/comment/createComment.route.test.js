@@ -71,7 +71,7 @@ describe('PUT /comment', () => {
         const response = await request(app)
         .post('/comment')
         .set({ token: token1 })
-        .send({ idStory: idStory, content: 'zz' });
+        .send({ idStory, content: 'zz' });
         assert.equal(response.status, 404);
         assert.equal(response.body.success, false);
         assert.equal(response.body.code, 'CANNOT_FIND_STORY');

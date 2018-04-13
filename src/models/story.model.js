@@ -59,7 +59,8 @@ class Story extends StoryModel {
     static async dislikeStory(idUser, idStory) {
         validateObjectIds(idStory, idUser);
         const updateObj = { $pull: { fans: idUser } };
-        const story = await Story.findByIdAndUpdate(idStory, updateObj, { new: true });
+        const queryObj = { _id: idStory, fans: { $all: [idUser] } };
+        const story = await Story.findOneAndUpdate(queryObj, updateObj, { new: true });
         validateStoryExist(story);
         return story;
     }

@@ -4,7 +4,7 @@ const { app } = require('../../../src/app');
 const { Story } = require('../../../src/models/story.model.js');
 const { User } = require('../../../src/models/user.model.js');
 
-describe.only('POST /story/dislike/:_id', () => {
+describe('POST /story/dislike/:_id', () => {
     let token1, idUser1, token2, idUser2, idStory;
 
     beforeEach('Create story and get token for test', async () => {

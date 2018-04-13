@@ -52,6 +52,23 @@ class Comment extends CommentModel {
         if (!comment) throw new MyError('Cannot find comment', 404, 'CANNOT_FIND_COMMENT');
         return comment;
     }
+
+    static async likeComment(idUser, idComment) {
+        validateObjectIds(idComment, idUser);
+        const updateObj = { $addToSet: { fans: idUser } };
+        const comment = await Comment.findByIdAndUpdate(idComment, updateObj, { new: true });
+        if (!comment) throw new MyError('Cannot find comment', 404, 'CANNOT_FIND_COMMENT');
+        return comment;
+    }
+
+    static async dislikeComment(idUser, idComment) {
+        validateObjectIds(idComment, idUser);
+        const updateObj = { $pull: { fans: idUser } };
+        const queryObj = { _id: idComment, fans: { $all: [idUser] } };
+        const comment = await Comment.findOneAndUpdate(queryObj, updateObj, { new: true });
+        if (!comment) throw new MyError('Cannot find comment', 404, 'CANNOT_FIND_COMMENT');
+        return comment;
+    }
 }
 
 module.exports = { Comment };

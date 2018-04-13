@@ -5,7 +5,7 @@ const { Story } = require('../../../src/models/story.model.js');
 const { User } = require('../../../src/models/user.model.js');
 const { Comment } = require('../../../src/models/comment.model');
 
-describe('POST /story/dislike/:_id', () => {
+describe('POST /comment/dislike/:_id', () => {
     let token1, idUser1, token2, idUser2, idUser3, token3, idStory, idComment;
 
     beforeEach('Create story and get token for test', async () => {

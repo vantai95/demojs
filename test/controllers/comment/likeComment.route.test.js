@@ -5,7 +5,7 @@ const { Story } = require('../../../src/models/story.model.js');
 const { User } = require('../../../src/models/user.model.js');
 const { Comment } = require('../../../src/models/comment.model');
 
-describe('POST /story/like/:_id', () => {
+describe('POST /comment/like/:_id', () => {
     let token1, idUser1, token2, idUser2, idUser3, token3, idStory, idComment;
 
     beforeEach('Create story and get token for test', async () => {
@@ -24,60 +24,63 @@ describe('POST /story/like/:_id', () => {
         const story = await Story.createStory('abcd', idUser1);
         idStory = story._id;
         const comment = await Comment.createComment(idUser2, idStory, 'xyz');
-        // idComment = comment._id;
+        idComment = comment._id;
         // await Comment.likeComment(idUser3, idComment);
     });
 
     it('Can like a comment', async () => {
         const response = await request(app)
-        .post(`/comment/like/${idStory}`)
+        .post(`/comment/like/${idComment}`)
         .set({ token: token3 })
         .send({});
         console.log(response.body);
-        // assert.equal(response.body.success, true);
-        // assert.equal(response.body.comment.fans.length, 0);
-        // const comment = await Comment.findById(idComment);
-        // assert.equal(comment.fans.length, 0);
+        assert.equal(response.body.success, true);
+        assert.equal(response.body.comment.fans.length, 1);
+        const comment = await Comment.findById(idComment).populate('fans');
+        assert.equal(comment.fans[0].name, 'Tun');
     });
 
-    it('Cannot dislike comment without token', async () => {
+    it('Cannot like comment twice', async () => {
+        await Comment.likeComment(idUser3, idComment);
         const response = await request(app)
-        .post(`/comment/dislike/${idComment}`)
-        .set({ token: '' })
+        .post(`/comment/like/${idComment}`)
+        .set({ token: token3 })
+        .send({});
+        // console.log(response.body);
+        assert.equal(response.body.success, false);
+        assert.equal(response.body.code, 'CANNOT_FIND_COMMENT');
+        assert.equal(response.status, 404);
+        const comment = await Comment.findById(idComment).populate('fans');
+        assert.equal(comment.fans[0].name, 'Tun');
+    });
+
+    it('Cannot like comment without token', async () => {
+        const response = await request(app)
+        .post(`/comment/like/${idComment}`)
         .send({});
         assert.equal(response.body.success, false);
         assert.equal(response.body.code, 'INVALID_TOKEN');
-        const comment = await Comment.findById(idComment);
-        assert.equal(comment.fans.length, 1);
+        assert.equal(response.status, 400);
     });
 
-    it('Cannot dislike comment with wrong comment id', async () => {
+    it('Cannot like comment with wrong comment id', async () => {
         const response = await request(app)
-        .post(`/comment/dislike/abcdef1213`)
+        .post(`/comment/like/${idComment}1`)
         .set({ token: token3 })
         .send({});
         assert.equal(response.body.success, false);
         assert.equal(response.body.code, 'INVALID_ID');
-        const comment = await Comment.findById(idComment);
-        assert.equal(comment.fans.length, 1);
+        assert.equal(response.status, 400);
     });
 
-    it('Cannot dislike a removed comment', async () => {
+    it('Cannot like a removed comment', async () => {
         await Comment.findByIdAndRemove(idComment);
         const response = await request(app)
-        .post(`/comment/dislike/${idComment}`)
-        .set({ token: token2 })
+        .post(`/comment/like/${idComment}`)
+        .set({ token: token3 })
         .send({});
         assert.equal(response.body.success, false);
         assert.equal(response.body.code, 'CANNOT_FIND_COMMENT');
-    });
-
-    it('Cannot dislike a comment, you havent liked it before', async () => {
-        const response = await request(app)
-        .post(`/comment/dislike/${idComment}`)
-        .set({ token: token2 })
-        .send({});
-        assert.equal(response.body.success, false);
-        assert.equal(response.body.code, 'CANNOT_FIND_COMMENT');
+        assert.equal(response.status, 404);
     });
 });

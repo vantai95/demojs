@@ -70,7 +70,7 @@ describe('POST /story/like/:_id', () => {
         const story = await Story.findOne({});
         assert.equal(story.fans.length, 0);
     });
-    it.only('Cannot like story twice', async () => {
+    it('Cannot like story twice', async () => {
         await Story.likeStory(idUser2, idStory);
         const response = await request(app)
         .post(`/story/like/${idStory}`)

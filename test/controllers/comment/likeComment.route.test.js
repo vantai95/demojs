@@ -5,7 +5,7 @@ const { Story } = require('../../../src/models/story.model.js');
 const { User } = require('../../../src/models/user.model.js');
 const { Comment } = require('../../../src/models/comment.model');
 
-describe('POST /story/dislike/:_id', () => {
+describe('POST /story/like/:_id', () => {
     let token1, idUser1, token2, idUser2, idUser3, token3, idStory, idComment;
 
     beforeEach('Create story and get token for test', async () => {
@@ -24,19 +24,20 @@ describe('POST /story/dislike/:_id', () => {
         const story = await Story.createStory('abcd', idUser1);
         idStory = story._id;
         const comment = await Comment.createComment(idUser2, idStory, 'xyz');
-        idComment = comment._id;
-        await Comment.likeComment(idUser3, idComment);
+        // idComment = comment._id;
+        // await Comment.likeComment(idUser3, idComment);
     });
 
-    it('Can dislike a comment', async () => {
+    it('Can like a comment', async () => {
         const response = await request(app)
-        .post(`/comment/dislike/${idComment}`)
+        .post(`/comment/like/${idStory}`)
         .set({ token: token3 })
         .send({});
-        assert.equal(response.body.success, true);
-        assert.equal(response.body.comment.fans.length, 0);
-        const comment = await Comment.findById(idComment);
-        assert.equal(comment.fans.length, 0);
+        console.log(response.body);
+        // assert.equal(response.body.success, true);
+        // assert.equal(response.body.comment.fans.length, 0);
+        // const comment = await Comment.findById(idComment);
+        // assert.equal(comment.fans.length, 0);
     });
 
     it('Cannot dislike comment without token', async () => {

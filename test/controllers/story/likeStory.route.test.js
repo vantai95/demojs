@@ -70,7 +70,20 @@ describe('POST /story/like/:_id', () => {
         const story = await Story.findOne({});
         assert.equal(story.fans.length, 0);
     });
-
+    it.only('Cannot like story twice', async () => {
+        await Story.likeStory(idUser2, idStory);
+        const response = await request(app)
+        .post(`/story/like/${idStory}`)
+        .set({ token: token2 })
+        .send({});
+        console.log(response.body);
+        assert.equal(response.status, 404);
+        assert.equal(response.body.success, false);
+        assert.equal(response.body.story, null);
+        assert.equal(response.body.code, 'CANNOT_FIND_STORY');
+        const story = await Story.findOne({});
+        assert.equal(story.fans.length, 1);
+    });
     it('Cannot like a removed story', async () => {
         await Story.findByIdAndRemove(idStory);
         const response = await request(app)
